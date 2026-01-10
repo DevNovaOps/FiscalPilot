@@ -34,6 +34,8 @@ class User(db.Model):
     ai_decisions = db.relationship("AIDecision", back_populates="user", cascade="all, delete-orphan")
     preferences = db.relationship("UserPreference", back_populates="user", cascade="all, delete-orphan", uselist=False)
     risk_profile = db.relationship("RiskProfile", back_populates="user", cascade="all, delete-orphan", uselist=False)
+    plaid_items = db.relationship("PlaidItem", back_populates="user", cascade="all, delete-orphan")
+    agent_actions = db.relationship("AgentAction", back_populates="user", cascade="all, delete-orphan")
     
     def set_password(self, password: str):
         """Hash and set password"""

@@ -34,3 +34,10 @@ langgraph==0.2.50
 bcrypt==4.1.2
 PyJWT==2.8.0
 email-validator>=2.0.0
+
+# ===============================
+# Plaid Integration (Sandbox)
+# ===============================
+# NOTE: Using latest version - tested with v38.0.0+
+# For compatibility, use: pip install plaid-python
+plaid-python>=11.0.0

@@ -6,6 +6,8 @@
     <title>Dashboard - Fiscal Pilot</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/animations.css">
+    <!-- Plaid Link Library (Sandbox - Demo Only) -->
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -62,10 +64,44 @@
                     <h2 class="card-title">Quick Actions</h2>
                 </div>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <a href="/expenses.html" class="btn btn-primary">View Expenses</a>
+                    <a href="/expenses.html" class="btn btn-primary">View Transactions</a>
                     <a href="/insights.html" class="btn btn-secondary">Run AI Analysis</a>
-                    <a href="/expenses.html?upload=true" class="btn btn-secondary">Upload CSV</a>
                     <a href="/risk-profile.html" class="btn btn-secondary">View Risk Profile</a>
+                    <button onclick="syncTransactions()" class="btn btn-secondary" id="sync-btn" style="display: none;">
+                        Sync Bank Transactions
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bank Connection Status -->
+            <div id="bank-status-card" class="card" style="margin-bottom: 2rem; display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Bank Account Connection</h2>
+                </div>
+                <div id="bank-status-content">
+                    <p class="text-muted">No bank account connected.</p>
+                </div>
+            </div>
+
+            <!-- Autonomous Financial Agent Status -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">🤖 FiscalPilot Autonomous Agent</h2>
+                </div>
+                <div id="agent-status-content">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <span style="font-size: 1.5rem; color: var(--accent-success);" id="agent-status-indicator">●</span>
+                        <div>
+                            <strong id="agent-status-text">Status: ACTIVE</strong>
+                            <p class="text-muted" style="margin: 0; font-size: 0.875rem;" id="agent-status-detail">
+                                Agent is observing your transactions and taking proactive actions
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div id="agent-last-action">
+                        <p class="text-muted">Loading agent status...</p>
+                    </div>
                 </div>
             </div>
 
@@ -99,6 +135,83 @@
         // Check authentication
         if (!window.app.isAuthenticated()) {
             window.location.href = '/login.html';
+        }
+
+        // Check bank connection and auto-sync
+        async function checkAndSyncBankTransactions() {
+            try {
+                const status = await window.app.getPlaidStatus();
+                const connectedAccounts = status.connected_accounts || [];
+                
+                if (connectedAccounts.length > 0) {
+                    // Bank is connected, show status
+                    const statusCard = document.getElementById('bank-status-card');
+                    statusCard.style.display = 'block';
+                    const statusContent = document.getElementById('bank-status-content');
+                    statusContent.innerHTML = `
+                        <p><strong>Connected Banks:</strong></p>
+                        <ul>
+                            ${connectedAccounts.map(acc => `<li>${acc.institution_name || 'Unknown Bank'} (Connected ${window.app.formatDate(acc.created_at)})</li>`).join('')}
+                        </ul>
+                        <p class="text-muted" style="margin-top: 1rem;">
+                            Transactions are automatically synced. Click "Sync Bank Transactions" to manually refresh.
+                        </p>
+                    `;
+                    document.getElementById('sync-btn').style.display = 'inline-block';
+                    
+                    // Auto-sync transactions on dashboard load (if bank connected)
+                    try {
+                        await syncTransactions();
+                    } catch (syncError) {
+                        console.error('Auto-sync error:', syncError);
+                        // Don't show error to user, just log it
+                    }
+                } else {
+                    // No bank connected
+                    document.getElementById('bank-status-card').style.display = 'none';
+                    document.getElementById('sync-btn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking bank status:', error);
+                document.getElementById('bank-status-card').style.display = 'none';
+            }
+        }
+
+        async function syncTransactions() {
+            const container = document.getElementById('alert-container');
+            const syncBtn = document.getElementById('sync-btn');
+            
+            try {
+                if (syncBtn) {
+                    syncBtn.disabled = true;
+                    syncBtn.textContent = 'Syncing...';
+                }
+                
+                window.app.showAlert('Syncing transactions from bank account...', 'info', container);
+                
+                const result = await window.app.syncPlaidTransactions();
+                
+                window.app.showAlert(
+                    `Sync complete! Added ${result.transactions_added || 0} new transactions.`,
+                    'success',
+                    container
+                );
+                
+                // Reload dashboard data after sync
+                await loadDashboard();
+                // Agent runs automatically after sync - refresh agent status
+                await loadAgentStatus();
+                // Agent runs automatically after sync - refresh agent status
+                await loadAgentStatus();
+            } catch (error) {
+                window.app.showAlert(error.message || 'Failed to sync transactions', 'danger', container);
+                console.error('Error syncing transactions:', error);
+            } finally {
+                if (syncBtn) {
+                    syncBtn.disabled = false;
+                    syncBtn.textContent = 'Sync Bank Transactions';
+                }
+            }
         }
 
         // Load dashboard data
@@ -214,8 +327,95 @@
             container.appendChild(list);
         }
 
+        // Load agent status (autonomous agent)
+        async function loadAgentStatus() {
+            try {
+                const status = await window.app.getAgentStatus();
+                
+                // Update status indicator
+                document.getElementById('agent-status-text').textContent = `Status: ${status.status}`;
+                
+                // Show last action
+                const lastActionDiv = document.getElementById('agent-last-action');
+                if (status.last_action) {
+                    const action = status.last_action;
+                    const actionTypeBadge = action.action_type === 'WARNING' ? 'warning' : 
+                                           action.action_type === 'BUDGET_ADJUSTMENT' ? 'danger' : 'info';
+                    
+                    lastActionDiv.innerHTML = `
+                        <div style="border-left: 3px solid var(--accent-${actionTypeBadge}); padding-left: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <strong style="text-transform: capitalize;">${action.action_type.replace('_', ' ')}</strong>
+                                <small class="text-muted">${window.app.formatDate(action.created_at)}</small>
+                            </div>
+                            <p style="margin: 0.5rem 0; font-weight: 600;">${action.message}</p>
+                            <details style="margin-top: 0.5rem;">
+                                <summary style="cursor: pointer; color: var(--accent-primary); font-size: 0.875rem;">
+                                    View Reasoning
+                                </summary>
+                                <p style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; font-size: 0.875rem;">
+                                    ${action.reasoning}
+                                </p>
+                            </details>
+                            ${!action.resolved ? `
+                                <button onclick="resolveAgentAction(${action.id})" class="btn btn-secondary" style="margin-top: 0.75rem; padding: 0.25rem 0.75rem; font-size: 0.875rem;">
+                                    Mark as Resolved
+                                </button>
+                            ` : '<small class="text-muted" style="display: block; margin-top: 0.5rem;">✓ Resolved</small>'}
+                        </div>
+                    `;
+                } else {
+                    lastActionDiv.innerHTML = '<p class="text-muted">No actions taken yet. Agent will analyze your transactions automatically.</p>';
+                }
+                
+                // Show unresolved count
+                if (status.unresolved_actions_count > 0) {
+                    const indicator = document.getElementById('agent-status-indicator');
+                    indicator.style.color = 'var(--accent-warning)';
+                    document.getElementById('agent-status-detail').textContent = 
+                        `${status.unresolved_actions_count} unresolved action(s) require attention`;
+                }
+            } catch (error) {
+                console.error('Error loading agent status:', error);
+                document.getElementById('agent-status-content').innerHTML = 
+                    '<p class="text-muted">Unable to load agent status.</p>';
+            }
+        }
+
+        async function resolveAgentAction(actionId) {
+            try {
+                await window.app.resolveAgentAction(actionId);
+                window.app.showAlert('Action marked as resolved', 'success', document.getElementById('alert-container'));
+                await loadAgentStatus();
+            } catch (error) {
+                window.app.showAlert(error.message || 'Failed to resolve action', 'danger', document.getElementById('alert-container'));
+            }
+        }
+
         // Load on page load
-        loadDashboard();
+        // First check bank status and sync, then load dashboard and agent status
+        checkAndSyncBankTransactions().then(() => {
+            loadDashboard();
+            loadAgentStatus();
+            // Trigger agent after dashboard load (runs automatically)
+            triggerAgentAfterLoad();
+        }).catch(() => {
+            // If bank check fails, still load dashboard and agent
+            loadDashboard();
+            loadAgentStatus();
+            triggerAgentAfterLoad();
+        });
+
+        async function triggerAgentAfterLoad() {
+            // Agent runs automatically, but we can trigger it on dashboard load
+            try {
+                // Agent will run automatically after sync, but trigger here too for dashboard load
+                await window.app.triggerAgent();
+            } catch (error) {
+                // Silent fail - agent runs automatically on sync anyway
+                console.log('Agent trigger skipped (already running)');
+            }
+        }
     </script>
 </body>
 </html>

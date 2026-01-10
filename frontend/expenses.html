@@ -6,6 +6,9 @@
     <title>Expenses - Fiscal Pilot</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/animations.css">
+    <!-- Plaid Link Library (Sandbox - Demo Only) -->
+    <!-- NOTE: This uses Plaid sandbox for demonstration, not RBI Account Aggregator -->
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -35,14 +38,43 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h1>Transactions</h1>
                 <div style="display: flex; gap: 1rem;">
-                    <button onclick="document.getElementById('csv-upload').click()" class="btn btn-secondary">Upload CSV</button>
-                    <button onclick="showAddTransactionForm()" class="btn btn-primary">Add Transaction</button>
+                    <button onclick="connectBankAccount()" class="btn btn-primary" id="connect-bank-btn">
+                        <span id="bank-status-text">Connect Bank Account</span>
+                    </button>
+                    <button onclick="syncTransactions()" class="btn btn-secondary" id="sync-btn" style="display: none;">
+                        Sync Transactions
+                    </button>
                 </div>
             </div>
 
-            <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
-
             <div id="alert-container"></div>
+
+            <!-- Bank Connection Status -->
+            <div id="bank-status-card" class="card" style="margin-bottom: 2rem; display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Bank Account Connection</h2>
+                </div>
+                <div id="bank-status-content">
+                    <p class="text-muted">No bank account connected.</p>
+                </div>
+            </div>
+
+            <!-- Automatic Sync Message -->
+            <div class="card" style="margin-bottom: 2rem; background: var(--accent-primary); color: white; border: none;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.5rem;">💳</span>
+                    <div>
+                        <h3 style="margin: 0; color: white;">Automatic Transaction Sync</h3>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                            Expenses & income are synced automatically from your connected bank account.
+                            Manual entry is disabled to ensure accurate financial tracking.
+                        </p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">
+                            <strong>NOTE:</strong> This uses Plaid sandbox (demo only), not RBI Account Aggregator. Data is simulated for demonstration purposes.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <!-- Filters -->
             <div class="card" style="margin-bottom: 2rem;">
@@ -75,44 +107,8 @@
         </div>
     </section>
 
-    <!-- Add Transaction Modal -->
-    <div id="add-transaction-modal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: flex; align-items: center; justify-content: center;">
-        <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
-            <div class="card-header">
-                <h2 class="card-title">Add Transaction</h2>
-            </div>
-            <form id="add-transaction-form">
-                <div class="form-group">
-                    <label class="form-label">Type</label>
-                    <select id="tx-type" class="form-select" required>
-                        <option value="expense">Expense</option>
-                        <option value="income">Income</option>
-                        <option value="transfer">Transfer</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount</label>
-                    <input type="number" id="tx-amount" class="form-input" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <input type="text" id="tx-description" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date</label>
-                    <input type="date" id="tx-date" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <input type="text" id="tx-category" class="form-input">
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Transaction</button>
-                    <button type="button" onclick="hideAddTransactionForm()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Manual Transaction Entry Disabled -->
+    <!-- Manual entry forms have been removed as transactions are now synced automatically from bank accounts -->
 
     <script src="/js/theme.js"></script>
     <script src="/js/app.js"></script>
@@ -122,8 +118,8 @@
             window.location.href = '/login.html';
         }
 
-        // Set today's date as default
-        document.getElementById('tx-date').valueAsDate = new Date();
+        // Load bank connection status on page load
+        loadBankStatus();
 
         async function loadTransactions() {
             const container = document.getElementById('transactions-container');
@@ -210,14 +206,102 @@
             });
         }
 
-        function showAddTransactionForm() {
-            document.getElementById('add-transaction-modal').classList.remove('hidden');
+        async function loadBankStatus() {
+            try {
+                const status = await window.app.getPlaidStatus();
+                const connectedAccounts = status.connected_accounts || [];
+                
+                if (connectedAccounts.length > 0) {
+                    // Bank is connected
+                    document.getElementById('connect-bank-btn').textContent = 'Bank Connected ✅';
+                    document.getElementById('connect-bank-btn').classList.remove('btn-primary');
+                    document.getElementById('connect-bank-btn').classList.add('btn-secondary');
+                    document.getElementById('sync-btn').style.display = 'inline-block';
+                    
+                    // Show bank status card
+                    const statusCard = document.getElementById('bank-status-card');
+                    statusCard.style.display = 'block';
+                    const statusContent = document.getElementById('bank-status-content');
+                    statusContent.innerHTML = `
+                        <p><strong>Connected Banks:</strong></p>
+                        <ul>
+                            ${connectedAccounts.map(acc => `<li>${acc.institution_name || 'Unknown Bank'} (Connected ${window.app.formatDate(acc.created_at)})</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    // No bank connected
+                    document.getElementById('connect-bank-btn').textContent = 'Connect Bank Account';
+                    document.getElementById('connect-bank-btn').classList.remove('btn-secondary');
+                    document.getElementById('connect-bank-btn').classList.add('btn-primary');
+                    document.getElementById('sync-btn').style.display = 'none';
+                    
+                    const statusCard = document.getElementById('bank-status-card');
+                    statusCard.style.display = 'block';
+                    const statusContent = document.getElementById('bank-status-content');
+                    statusContent.innerHTML = '<p class="text-muted">No bank account connected. Click "Connect Bank Account" to get started.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading bank status:', error);
+                // Hide status card on error
+                document.getElementById('bank-status-card').style.display = 'none';
+            }
         }
 
-        function hideAddTransactionForm() {
-            document.getElementById('add-transaction-modal').classList.add('hidden');
-            document.getElementById('add-transaction-form').reset();
-            document.getElementById('tx-date').valueAsDate = new Date();
+        async function connectBankAccount() {
+            const container = document.getElementById('alert-container');
+            
+            try {
+                // Check if Plaid is loaded
+                if (typeof Plaid === 'undefined') {
+                    throw new Error('Plaid Link library not loaded. Please refresh the page.');
+                }
+                
+                window.app.showAlert('Opening Plaid Link...', 'info', container);
+                
+                const result = await window.app.initializePlaidLink();
+                
+                if (result.success) {
+                    window.app.showAlert(result.message || 'Bank account connected successfully!', 'success', container);
+                    await loadBankStatus();
+                    // Auto-sync transactions after connection
+                    await syncTransactions();
+                } else if (result.cancelled) {
+                    // User cancelled, no error
+                    console.log('Bank connection cancelled by user');
+                }
+            } catch (error) {
+                window.app.showAlert(error.message || 'Failed to connect bank account', 'danger', container);
+                console.error('Error connecting bank:', error);
+            }
+        }
+
+        async function syncTransactions() {
+            const container = document.getElementById('alert-container');
+            const syncBtn = document.getElementById('sync-btn');
+            
+            try {
+                syncBtn.disabled = true;
+                syncBtn.textContent = 'Syncing...';
+                
+                window.app.showAlert('Syncing transactions from bank account...', 'info', container);
+                
+                const result = await window.app.syncPlaidTransactions();
+                
+                window.app.showAlert(
+                    `Sync complete! Added ${result.transactions_added || 0} new transactions.`,
+                    'success',
+                    container
+                );
+                
+                // Reload transactions list
+                await loadTransactions();
+            } catch (error) {
+                window.app.showAlert(error.message || 'Failed to sync transactions', 'danger', container);
+                console.error('Error syncing transactions:', error);
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.textContent = 'Sync Transactions';
+            }
         }
 
         async function deleteTransaction(id) {
@@ -231,49 +315,6 @@
                 window.app.showAlert(error.message, 'danger', document.getElementById('alert-container'));
             }
         }
-
-        async function handleCSVUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const container = document.getElementById('alert-container');
-            try {
-                const result = await window.app.uploadTransactionsCSV(file);
-                window.app.showAlert(`Successfully imported ${result.transactions_created} transactions`, 'success', container);
-                loadTransactions();
-            } catch (error) {
-                window.app.showAlert(error.message, 'danger', container);
-            }
-            
-            event.target.value = ''; // Reset input
-        }
-
-        document.getElementById('add-transaction-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const transaction = {
-                amount: parseFloat(document.getElementById('tx-amount').value),
-                description: document.getElementById('tx-description').value,
-                transaction_date: document.getElementById('tx-date').value,
-                transaction_type: document.getElementById('tx-type').value,
-                category: document.getElementById('tx-category').value || null,
-                source: 'manual'
-            };
-            
-            // Make expense amounts negative
-            if (transaction.transaction_type === 'expense' && transaction.amount > 0) {
-                transaction.amount = -transaction.amount;
-            }
-            
-            try {
-                await window.app.createTransaction(transaction);
-                window.app.showAlert('Transaction added successfully', 'success', document.getElementById('alert-container'));
-                hideAddTransactionForm();
-                loadTransactions();
-            } catch (error) {
-                window.app.showAlert(error.message, 'danger', document.getElementById('alert-container'));
-            }
-        });
 
         // Load on page load
         loadTransactions();

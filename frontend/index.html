@@ -132,5 +132,18 @@
 
     <script src="/js/theme.js"></script>
     <script src="/js/animations.js"></script>
+    <script>
+        // Initialize theme toggle button
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    if (window.themeManager) {
+                        window.themeManager.toggleTheme();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

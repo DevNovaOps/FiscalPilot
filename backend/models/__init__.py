@@ -6,6 +6,8 @@ from .transaction import Transaction
 from .ai_decision import AIDecision
 from .user_preference import UserPreference
 from .risk_profile import RiskProfile
+from .plaid_item import PlaidItem
+from .agent_action import AgentAction
 
 __all__ = [
     "User",
@@ -13,4 +15,6 @@ __all__ = [
     "AIDecision",
     "UserPreference",
     "RiskProfile",
+    "PlaidItem",
+    "AgentAction",
 ]

@@ -17,6 +17,14 @@ DB_NAME=fiscal_pilot
 # Get your API key from: https://console.groq.com
 GROQ_API_KEY=your-groq-api-key-here
 
+# Plaid API Configuration (Sandbox - Demo Only)
+# NOTE: This uses Plaid sandbox for demonstration purposes only, not RBI Account Aggregator.
+# Get your credentials from: https://dashboard.plaid.com/developers/api
+# For sandbox: Use test credentials from Plaid Dashboard
+PLAID_CLIENT_ID=your-plaid-client-id
+PLAID_SECRET=your-plaid-secret
+PLAID_ENV=sandbox
+
 # Application Settings
 DEBUG=True
 PORT=5000

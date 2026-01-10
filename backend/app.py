@@ -13,10 +13,10 @@ load_dotenv()
 # Import database and models
 from .db import db
 from .config import settings, DATABASE_URI
-from .models import User, Transaction, AIDecision, UserPreference, RiskProfile
+from .models import User, Transaction, AIDecision, UserPreference, RiskProfile, PlaidItem, AgentAction
 
 # Import API routes
-from .api import auth, transactions, analysis, preferences, mock
+from .api import auth, transactions, analysis, preferences, mock, plaid, agent
 
 
 def create_app():
@@ -43,6 +43,8 @@ def create_app():
     app.register_blueprint(analysis.bp, url_prefix='/api/analysis')
     app.register_blueprint(preferences.bp, url_prefix='/api/preferences')
     app.register_blueprint(mock.bp, url_prefix='/api')
+    app.register_blueprint(plaid.bp, url_prefix='/api')  # Plaid routes at /api/plaid/*
+    app.register_blueprint(agent.bp, url_prefix='/api')  # Agent routes at /api/agent/*
     
     # Serve frontend files
     @app.route('/')

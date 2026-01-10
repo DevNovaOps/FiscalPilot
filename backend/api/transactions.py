@@ -16,27 +16,34 @@ bp = Blueprint('transactions', __name__)
 @bp.route('', methods=['GET'])
 def get_transactions():
     """Get user transactions"""
-    user_id = get_current_user_id()
-    if not user_id:
-        return jsonify({"error": "Not authenticated"}), 401
-    
-    # Query parameters
-    days = request.args.get('days', 90, type=int)
-    category = request.args.get('category', None)
-    
-    query = Transaction.query.filter_by(user_id=user_id)
-    
-    if category:
-        query = query.filter_by(category=category)
-    
-    # Date filter
-    from datetime import timedelta
-    cutoff_date = datetime.utcnow().date() - timedelta(days=days)
-    query = query.filter(Transaction.transaction_date >= cutoff_date)
-    
-    transactions = query.order_by(Transaction.transaction_date.desc()).all()
-    
-    return jsonify([t.to_dict() for t in transactions]), 200
+    try:
+        user_id = get_current_user_id()
+        if not user_id:
+            return jsonify({"error": "Not authenticated"}), 401
+        
+        # Query parameters
+        days = request.args.get('days', 90, type=int)
+        category = request.args.get('category', None)
+        
+        query = Transaction.query.filter_by(user_id=user_id)
+        
+        if category:
+            query = query.filter_by(category=category)
+        
+        # Date filter
+        from datetime import timedelta
+        cutoff_date = datetime.utcnow().date() - timedelta(days=days)
+        query = query.filter(Transaction.transaction_date >= cutoff_date)
+        
+        transactions = query.order_by(Transaction.transaction_date.desc()).all()
+        
+        return jsonify([t.to_dict() for t in transactions]), 200
+        
+    except Exception as e:
+        print(f"Error in get_transactions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to fetch transactions: {str(e)}"}), 500
 
 
 @bp.route('', methods=['POST'])

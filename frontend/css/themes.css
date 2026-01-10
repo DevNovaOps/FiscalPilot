@@ -14,37 +14,40 @@
     --text-secondary: #a5b4fc;
     --text-muted: #64748b;
     
-    /* Cyberpunk Gradients */
-    --gradient-primary: linear-gradient(135deg, #00d9ff 0%, #7c3aed 50%, #ec4899 100%);
-    --gradient-secondary: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
-    --gradient-accent: linear-gradient(135deg, #00d9ff 0%, #10b981 100%);
-    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
-    --gradient-bg: radial-gradient(circle at 20% 30%, rgba(0, 217, 255, 0.15) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-                   radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+    /* Premium Gradients - More Polished */
+    --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    --gradient-secondary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-bg: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+                   radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                   radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
     
-    --accent-primary: #00d9ff;
-    --accent-secondary: #7c3aed;
+    --accent-primary: #3b82f6;
+    --accent-secondary: #8b5cf6;
     --accent-tertiary: #ec4899;
     --accent-success: #10b981;
     --accent-warning: #f59e0b;
     --accent-danger: #ef4444;
     
-    /* Enhanced Glows */
-    --glow-primary: 0 0 20px rgba(0, 217, 255, 0.6),
-                    0 0 40px rgba(0, 217, 255, 0.4),
-                    0 0 60px rgba(0, 217, 255, 0.2);
-    --glow-secondary: 0 0 20px rgba(124, 58, 237, 0.6),
-                      0 0 40px rgba(124, 58, 237, 0.4);
-    --glow-tertiary: 0 0 20px rgba(236, 72, 153, 0.6),
-                     0 0 40px rgba(236, 72, 153, 0.4);
-    --glow-success: 0 0 15px rgba(16, 185, 129, 0.5);
-    --glow-danger: 0 0 15px rgba(239, 68, 68, 0.5);
+    /* Enhanced Glows - More Subtle and Polished */
+    --glow-primary: 0 0 25px rgba(59, 130, 246, 0.4),
+                    0 0 50px rgba(59, 130, 246, 0.25),
+                    0 0 75px rgba(59, 130, 246, 0.1);
+    --glow-secondary: 0 0 20px rgba(139, 92, 246, 0.4),
+                      0 0 40px rgba(139, 92, 246, 0.25);
+    --glow-tertiary: 0 0 20px rgba(236, 72, 153, 0.4),
+                     0 0 40px rgba(236, 72, 153, 0.25);
+    --glow-success: 0 0 20px rgba(16, 185, 129, 0.4),
+                    0 0 40px rgba(16, 185, 129, 0.2);
+    --glow-danger: 0 0 20px rgba(239, 68, 68, 0.4),
+                   0 0 40px rgba(239, 68, 68, 0.2);
     
-    /* Enhanced Borders */
-    --border-color: rgba(0, 217, 255, 0.3);
-    --border-glow: 0 0 10px rgba(0, 217, 255, 0.4),
-                   0 0 20px rgba(0, 217, 255, 0.2);
+    /* Enhanced Borders - More Refined */
+    --border-color: rgba(59, 130, 246, 0.25);
+    --border-glow: 0 0 12px rgba(59, 130, 246, 0.3),
+                   0 0 24px rgba(59, 130, 246, 0.15);
     
     /* Enhanced Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4),
@@ -71,30 +74,34 @@
     --text-secondary: #334155;
     --text-muted: #64748b;
     
-    /* Light Theme Gradients */
-    --gradient-primary: linear-gradient(135deg, #0066cc 0%, #7c3aed 50%, #ec4899 100%);
-    --gradient-secondary: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
-    --gradient-accent: linear-gradient(135deg, #0066cc 0%, #059669 100%);
-    --gradient-danger: linear-gradient(135deg, #dc2626 0%, #d97706 100%);
-    --gradient-bg: radial-gradient(circle at 20% 30%, rgba(0, 102, 204, 0.08) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
+    /* Light Theme Gradients - More Polished */
+    --gradient-primary: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #ec4899 100%);
+    --gradient-secondary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-accent: linear-gradient(135deg, #0284c7 0%, #059669 100%);
+    --gradient-danger: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+    --gradient-success: linear-gradient(135deg, #059669 0%, #047857 100%);
+    --gradient-bg: radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+                   radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+                   radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
     
-    --accent-primary: #0066cc;
+    --accent-primary: #2563eb;
     --accent-secondary: #7c3aed;
     --accent-tertiary: #ec4899;
     --accent-success: #059669;
     --accent-warning: #d97706;
     --accent-danger: #dc2626;
     
-    --glow-primary: 0 0 15px rgba(0, 102, 204, 0.4),
-                    0 0 30px rgba(0, 102, 204, 0.2);
-    --glow-secondary: 0 0 15px rgba(124, 58, 237, 0.4);
-    --glow-tertiary: 0 0 15px rgba(236, 72, 153, 0.4);
-    --glow-success: 0 0 10px rgba(5, 150, 105, 0.3);
-    --glow-danger: 0 0 10px rgba(220, 38, 38, 0.3);
+    --glow-primary: 0 0 20px rgba(37, 99, 235, 0.3),
+                    0 0 40px rgba(37, 99, 235, 0.15);
+    --glow-secondary: 0 0 18px rgba(124, 58, 237, 0.3);
+    --glow-tertiary: 0 0 18px rgba(236, 72, 153, 0.3);
+    --glow-success: 0 0 18px rgba(5, 150, 105, 0.25),
+                    0 0 36px rgba(5, 150, 105, 0.1);
+    --glow-danger: 0 0 18px rgba(220, 38, 38, 0.25),
+                   0 0 36px rgba(220, 38, 38, 0.1);
     
-    --border-color: rgba(0, 102, 204, 0.3);
-    --border-glow: 0 0 8px rgba(0, 102, 204, 0.25);
+    --border-color: rgba(37, 99, 235, 0.2);
+    --border-glow: 0 0 10px rgba(37, 99, 235, 0.2);
     
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15),
                  0 0 0 1px rgba(0, 102, 204, 0.1);

@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     # Groq API
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     
+    # Plaid API (Sandbox - Demo Only, Not RBI Account Aggregator)
+    # NOTE: This is Plaid sandbox for demonstration purposes only.
+    # In production, this would be replaced with RBI Account Aggregator framework.
+    PLAID_CLIENT_ID: str = os.getenv("PLAID_CLIENT_ID", "")
+    PLAID_SECRET: str = os.getenv("PLAID_SECRET", "")
+    PLAID_ENV: str = os.getenv("PLAID_ENV", "sandbox")  # Must be 'sandbox' for demo
+    
     # Application
     UPLOAD_FOLDER: str = str(BASE_DIR / "uploads")
     MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB max file size

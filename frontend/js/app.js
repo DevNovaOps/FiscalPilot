@@ -150,6 +150,110 @@ async function updatePreferences(preferences) {
     });
 }
 
+// Plaid Functions (Bank Account Integration)
+// NOTE: This uses Plaid sandbox (demo only), not RBI Account Aggregator
+async function createPlaidLinkToken() {
+    return apiRequest('/plaid/create-link-token', {
+        method: 'POST'
+    });
+}
+
+async function exchangePlaidPublicToken(publicToken) {
+    return apiRequest('/plaid/exchange-public-token', {
+        method: 'POST',
+        body: { public_token: publicToken }
+    });
+}
+
+async function syncPlaidTransactions() {
+    return apiRequest('/plaid/sync-transactions');
+}
+
+async function getPlaidStatus() {
+    return apiRequest('/plaid/status');
+}
+
+// Autonomous Agent Functions
+// NOTE: This is an autonomous agent, NOT a chatbot
+async function getAgentStatus() {
+    return apiRequest('/agent/status');
+}
+
+async function getAgentActions(unresolvedOnly = false) {
+    return apiRequest(`/agent/actions?unresolved_only=${unresolvedOnly}`);
+}
+
+async function resolveAgentAction(actionId) {
+    return apiRequest(`/agent/actions/${actionId}/resolve`, {
+        method: 'POST'
+    });
+}
+
+async function triggerAgent() {
+    return apiRequest('/agent/trigger', {
+        method: 'POST'
+    });
+}
+
+function initializePlaidLink() {
+    /**
+     * Initialize Plaid Link for bank account connection
+     * NOTE: This uses Plaid sandbox for demonstration purposes only
+     */
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Check if Plaid is loaded
+            if (typeof Plaid === 'undefined') {
+                reject(new Error('Plaid Link library not loaded. Please include Plaid Link script.'));
+                return;
+            }
+
+            // Get link token from backend
+            const tokenResponse = await createPlaidLinkToken();
+            const linkToken = tokenResponse.link_token;
+
+            // Create Plaid Link handler
+            const handler = Plaid.create({
+                token: linkToken,
+                onSuccess: async (publicToken, metadata) => {
+                    try {
+                        // Exchange public token for access token (server-side)
+                        await exchangePlaidPublicToken(publicToken);
+                        resolve({
+                            success: true,
+                            message: 'Bank Connected ✅',
+                            metadata: metadata
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+                onExit: (err, metadata) => {
+                    if (err != null) {
+                        reject(new Error(`Plaid Link error: ${err.display_message || err.error_message || 'Unknown error'}`));
+                    } else {
+                        // User closed without connecting
+                        resolve({
+                            success: false,
+                            cancelled: true,
+                            message: 'Bank connection cancelled'
+                        });
+                    }
+                },
+                onEvent: (eventName, metadata) => {
+                    // Optional: Log Plaid Link events for debugging
+                    console.log('Plaid Link event:', eventName, metadata);
+                }
+            });
+
+            // Open Plaid Link
+            handler.open();
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 // Utility Functions
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-IN', {
@@ -204,6 +308,15 @@ window.app = {
     getInsights,
     getPreferences,
     updatePreferences,
+    createPlaidLinkToken,
+    exchangePlaidPublicToken,
+    syncPlaidTransactions,
+    getPlaidStatus,
+    initializePlaidLink,
+    getAgentStatus,
+    getAgentActions,
+    resolveAgentAction,
+    triggerAgent,
     formatCurrency,
     formatDate,
     showAlert,

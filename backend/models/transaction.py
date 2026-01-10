@@ -39,6 +39,7 @@ class Transaction(db.Model):
     # Source tracking
     source = db.Column(db.String(50), nullable=False, default="manual")  # manual, csv, mock_aa, plaid
     external_id = db.Column(db.String(255), nullable=True)  # External transaction ID if synced
+    transaction_id = db.Column(db.String(255), unique=True, nullable=True, index=True)  # UNIQUE Plaid transaction_id for duplicate prevention
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -65,5 +66,7 @@ class Transaction(db.Model):
             "is_discretionary": self.is_discretionary,
             "is_recurring": self.is_recurring,
             "source": self.source,
+            "transaction_id": self.transaction_id,
+            "external_id": self.external_id,
             "created_at": self.created_at.isoformat(),
         }
