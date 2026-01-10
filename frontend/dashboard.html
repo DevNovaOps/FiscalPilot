@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link active">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <section class="section">
+        <div class="container">
+            <h1>Dashboard</h1>
+            <p class="text-muted">Welcome back! Here's your financial overview.</p>
+
+            <div id="alert-container"></div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-3" style="margin: 2rem 0;">
+                <div class="card hover-lift hover-glow animate-fade-in-up animate-delay-1">
+                    <h3 style="margin-bottom: 0.5rem;">Total Expenses</h3>
+                    <p style="font-size: 2rem; color: var(--accent-danger); margin: 0; font-weight: 700;" id="total-expenses">₹0</p>
+                    <small class="text-muted">Last 30 days</small>
+                </div>
+                <div class="card hover-lift hover-glow animate-fade-in-up animate-delay-2">
+                    <h3 style="margin-bottom: 0.5rem;">Total Income</h3>
+                    <p style="font-size: 2rem; color: var(--accent-success); margin: 0; font-weight: 700;" id="total-income">₹0</p>
+                    <small class="text-muted">Last 30 days</small>
+                </div>
+                <div class="card hover-lift hover-glow animate-fade-in-up animate-delay-3">
+                    <h3 style="margin-bottom: 0.5rem;">Risk Level</h3>
+                    <p style="font-size: 2rem; margin: 0; font-weight: 700;" id="risk-level">-</p>
+                    <small class="text-muted">Current assessment</small>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card" style="margin: 2rem 0;">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Actions</h2>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="/expenses.html" class="btn btn-primary">View Expenses</a>
+                    <a href="/insights.html" class="btn btn-secondary">Run AI Analysis</a>
+                    <a href="/expenses.html?upload=true" class="btn btn-secondary">Upload CSV</a>
+                    <a href="/risk-profile.html" class="btn btn-secondary">View Risk Profile</a>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Transactions</h2>
+                </div>
+                <div id="recent-transactions">
+                    <p class="text-center text-muted">Loading transactions...</p>
+                </div>
+            </div>
+
+            <!-- AI Insights Preview -->
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Recent AI Insights</h2>
+                    <a href="/insights.html" style="float: right; color: var(--accent-primary);">View All →</a>
+                </div>
+                <div id="insights-preview">
+                    <p class="text-center text-muted">No insights yet. <a href="/insights.html">Run analysis</a> to get started.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/animations.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load recent transactions
+                const transactions = await window.app.getTransactions(30);
+                displayRecentTransactions(transactions.slice(0, 5));
+                
+                // Calculate totals
+                let totalExpenses = 0;
+                let totalIncome = 0;
+                
+                transactions.forEach(tx => {
+                    if (tx.transaction_type === 'expense' && tx.amount < 0) {
+                        totalExpenses += Math.abs(tx.amount);
+                    } else if (tx.transaction_type === 'income' && tx.amount > 0) {
+                        totalIncome += tx.amount;
+                    }
+                });
+                
+                document.getElementById('total-expenses').textContent = window.app.formatCurrency(totalExpenses);
+                document.getElementById('total-income').textContent = window.app.formatCurrency(totalIncome);
+                
+                // Load risk profile
+                try {
+                    const riskProfile = await window.app.getRiskProfile();
+                    document.getElementById('risk-level').textContent = riskProfile.risk_level || '-';
+                    document.getElementById('risk-level').style.color = 
+                        riskProfile.risk_level === 'Low' ? 'var(--accent-success)' :
+                        riskProfile.risk_level === 'Medium' ? 'var(--accent-warning)' :
+                        'var(--accent-danger)';
+                } catch (e) {
+                    // Risk profile not available yet
+                }
+                
+                // Load recent insights
+                try {
+                    const insights = await window.app.getInsights();
+                    displayInsightsPreview(insights.slice(0, 3));
+                } catch (e) {
+                    // No insights yet
+                }
+                
+            } catch (error) {
+                window.app.showAlert(error.message, 'danger', document.getElementById('alert-container'));
+            }
+        }
+
+        function displayRecentTransactions(transactions) {
+            const container = document.getElementById('recent-transactions');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No transactions yet. <a href="/expenses.html">Add your first transaction</a></p>';
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.className = 'table';
+            
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            `;
+            
+            const tbody = document.createElement('tbody');
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${window.app.formatDate(tx.transaction_date)}</td>
+                    <td>${tx.description}</td>
+                    <td>${tx.category || '-'}</td>
+                    <td style="color: ${tx.amount < 0 ? 'var(--accent-danger)' : 'var(--accent-success)'}">
+                        ${window.app.formatCurrency(tx.amount)}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        function displayInsightsPreview(insights) {
+            const container = document.getElementById('insights-preview');
+            
+            if (insights.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No insights yet. <a href="/insights.html">Run analysis</a> to get started.</p>';
+                return;
+            }
+            
+            const list = document.createElement('div');
+            insights.forEach(insight => {
+                const item = document.createElement('div');
+                item.style.padding = '1rem';
+                item.style.borderBottom = '1px solid var(--border-color)';
+                item.innerHTML = `
+                    <h4>${insight.decision_type}</h4>
+                    <p class="text-muted" style="font-size: 0.9rem;">${insight.decision_summary.substring(0, 150)}...</p>
+                    <small class="text-muted">${window.app.formatDate(insight.created_at)}</small>
+                `;
+                list.appendChild(item);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(list);
+        }
+
+        // Load on page load
+        loadDashboard();
+    </script>
+</body>
+</html>

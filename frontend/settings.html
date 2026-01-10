@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link active">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Settings Content -->
+    <section class="section">
+        <div class="container-narrow">
+            <h1>Settings</h1>
+            <p class="text-muted">Manage your preferences and account settings</p>
+
+            <div id="alert-container"></div>
+
+            <!-- Preferences -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Financial Preferences</h2>
+                </div>
+                <form id="preferences-form">
+                    <div class="form-group">
+                        <label class="form-label" for="primary-goal">Primary Financial Goal</label>
+                        <select id="primary-goal" class="form-select">
+                            <option value="">Select a goal</option>
+                            <option value="retirement">Retirement Planning</option>
+                            <option value="house">Buying a House</option>
+                            <option value="emergency_fund">Building Emergency Fund</option>
+                            <option value="education">Education Fund</option>
+                            <option value="vacation">Vacation/Travel</option>
+                            <option value="debt_payoff">Debt Payoff</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="goal-amount">Goal Amount (₹)</label>
+                        <input type="number" id="goal-amount" class="form-input" step="1000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="goal-timeline">Goal Timeline (Years)</label>
+                        <input type="number" id="goal-timeline" class="form-input" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Interested Asset Classes</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="asset-stocks" value="stocks">
+                                <span>Stocks</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="asset-gold" value="gold">
+                                <span>Gold</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="asset-debt" value="debt">
+                                <span>Debt/Safe Assets</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="insights-frequency">Insights Frequency</label>
+                        <select id="insights-frequency" class="form-select">
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </form>
+            </div>
+
+            <!-- Account Info -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Account Information</h2>
+                </div>
+                <div id="account-info">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Data Consent -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Data Consent</h2>
+                </div>
+                <div>
+                    <p>You have consented to Fiscal Pilot using your financial data for:</p>
+                    <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                        <li>Transaction analysis and categorization</li>
+                        <li>AI-powered financial behavior assessment</li>
+                        <li>Risk profile generation</li>
+                        <li>Educational investment guidance</li>
+                    </ul>
+                    <p class="text-muted" style="font-size: 0.9rem;">
+                        <strong>Note:</strong> All AI decisions are logged for auditability and transparency. 
+                        Your data is used only for generating insights and is not shared with third parties.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Load user info
+        const user = window.app.getCurrentUser();
+        if (user) {
+            document.getElementById('account-info').innerHTML = `
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Name:</strong> ${user.full_name || 'Not set'}</p>
+                <p><strong>Member Since:</strong> ${window.app.formatDate(user.created_at)}</p>
+            `;
+        }
+
+        // Load preferences
+        async function loadPreferences() {
+            try {
+                const prefs = await window.app.getPreferences();
+                
+                document.getElementById('primary-goal').value = prefs.primary_goal || '';
+                document.getElementById('goal-amount').value = prefs.goal_amount || '';
+                document.getElementById('goal-timeline').value = prefs.goal_timeline_years || '';
+                document.getElementById('insights-frequency').value = prefs.insights_frequency || 'weekly';
+                
+                // Set asset class checkboxes
+                const assetClasses = prefs.interested_asset_classes || [];
+                document.getElementById('asset-stocks').checked = assetClasses.includes('stocks');
+                document.getElementById('asset-gold').checked = assetClasses.includes('gold');
+                document.getElementById('asset-debt').checked = assetClasses.includes('debt');
+                
+            } catch (error) {
+                // No preferences set yet
+            }
+        }
+
+        // Save preferences
+        document.getElementById('preferences-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const container = document.getElementById('alert-container');
+            
+            const assetClasses = [];
+            if (document.getElementById('asset-stocks').checked) assetClasses.push('stocks');
+            if (document.getElementById('asset-gold').checked) assetClasses.push('gold');
+            if (document.getElementById('asset-debt').checked) assetClasses.push('debt');
+            
+            const preferences = {
+                primary_goal: document.getElementById('primary-goal').value || null,
+                goal_amount: parseFloat(document.getElementById('goal-amount').value) || null,
+                goal_timeline_years: parseInt(document.getElementById('goal-timeline').value) || null,
+                interested_asset_classes: assetClasses.length > 0 ? assetClasses : null,
+                insights_frequency: document.getElementById('insights-frequency').value,
+            };
+            
+            try {
+                await window.app.updatePreferences(preferences);
+                window.app.showAlert('Preferences saved successfully!', 'success', container);
+            } catch (error) {
+                window.app.showAlert(error.message, 'danger', container);
+            }
+        });
+
+        // Load on page load
+        loadPreferences();
+    </script>
+</body>
+</html>

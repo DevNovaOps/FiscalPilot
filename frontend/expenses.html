@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link active">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Expenses Content -->
+    <section class="section">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h1>Transactions</h1>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="document.getElementById('csv-upload').click()" class="btn btn-secondary">Upload CSV</button>
+                    <button onclick="showAddTransactionForm()" class="btn btn-primary">Add Transaction</button>
+                </div>
+            </div>
+
+            <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+
+            <div id="alert-container"></div>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Period</label>
+                        <select id="period-filter" class="form-select" onchange="loadTransactions()">
+                            <option value="30">Last 30 days</option>
+                            <option value="90" selected>Last 90 days</option>
+                            <option value="180">Last 6 months</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Category</label>
+                        <select id="category-filter" class="form-select" onchange="loadTransactions()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <button onclick="loadTransactions()" class="btn btn-secondary">Apply Filters</button>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card">
+                <div id="transactions-container">
+                    <p class="text-center text-muted">Loading transactions...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Transaction Modal -->
+    <div id="add-transaction-modal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: flex; align-items: center; justify-content: center;">
+        <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div class="card-header">
+                <h2 class="card-title">Add Transaction</h2>
+            </div>
+            <form id="add-transaction-form">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select id="tx-type" class="form-select" required>
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                        <option value="transfer">Transfer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" id="tx-amount" class="form-input" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" id="tx-description" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="tx-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <input type="text" id="tx-category" class="form-input">
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Transaction</button>
+                    <button type="button" onclick="hideAddTransactionForm()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Set today's date as default
+        document.getElementById('tx-date').valueAsDate = new Date();
+
+        async function loadTransactions() {
+            const container = document.getElementById('transactions-container');
+            container.innerHTML = '<p class="text-center text-muted">Loading transactions...</p>';
+
+            try {
+                const days = parseInt(document.getElementById('period-filter').value) || 90;
+                const category = document.getElementById('category-filter').value;
+                
+                let transactions = await window.app.getTransactions(days);
+                
+                // Filter by category if selected
+                if (category) {
+                    transactions = transactions.filter(tx => tx.category === category);
+                }
+                
+                displayTransactions(transactions);
+                updateCategoryFilter(transactions);
+                
+            } catch (error) {
+                container.innerHTML = `<p class="text-center text-danger">Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayTransactions(transactions) {
+            const container = document.getElementById('transactions-container');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No transactions found. Add your first transaction!</p>';
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.className = 'table';
+            
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            `;
+            
+            const tbody = document.createElement('tbody');
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${window.app.formatDate(tx.transaction_date)}</td>
+                    <td>${tx.description}</td>
+                    <td>${tx.category || '-'}</td>
+                    <td style="color: ${tx.amount < 0 ? 'var(--accent-danger)' : 'var(--accent-success)'}; font-weight: 600;">
+                        ${window.app.formatCurrency(tx.amount)}
+                    </td>
+                    <td>
+                        <button onclick="deleteTransaction(${tx.id})" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        function updateCategoryFilter(transactions) {
+            const select = document.getElementById('category-filter');
+            const categories = [...new Set(transactions.map(tx => tx.category).filter(c => c))];
+            
+            // Keep "All Categories" option
+            const allOption = select.querySelector('option[value=""]');
+            select.innerHTML = '';
+            select.appendChild(allOption);
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function showAddTransactionForm() {
+            document.getElementById('add-transaction-modal').classList.remove('hidden');
+        }
+
+        function hideAddTransactionForm() {
+            document.getElementById('add-transaction-modal').classList.add('hidden');
+            document.getElementById('add-transaction-form').reset();
+            document.getElementById('tx-date').valueAsDate = new Date();
+        }
+
+        async function deleteTransaction(id) {
+            if (!confirm('Are you sure you want to delete this transaction?')) return;
+            
+            try {
+                await window.app.deleteTransaction(id);
+                window.app.showAlert('Transaction deleted successfully', 'success', document.getElementById('alert-container'));
+                loadTransactions();
+            } catch (error) {
+                window.app.showAlert(error.message, 'danger', document.getElementById('alert-container'));
+            }
+        }
+
+        async function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const container = document.getElementById('alert-container');
+            try {
+                const result = await window.app.uploadTransactionsCSV(file);
+                window.app.showAlert(`Successfully imported ${result.transactions_created} transactions`, 'success', container);
+                loadTransactions();
+            } catch (error) {
+                window.app.showAlert(error.message, 'danger', container);
+            }
+            
+            event.target.value = ''; // Reset input
+        }
+
+        document.getElementById('add-transaction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const transaction = {
+                amount: parseFloat(document.getElementById('tx-amount').value),
+                description: document.getElementById('tx-description').value,
+                transaction_date: document.getElementById('tx-date').value,
+                transaction_type: document.getElementById('tx-type').value,
+                category: document.getElementById('tx-category').value || null,
+                source: 'manual'
+            };
+            
+            // Make expense amounts negative
+            if (transaction.transaction_type === 'expense' && transaction.amount > 0) {
+                transaction.amount = -transaction.amount;
+            }
+            
+            try {
+                await window.app.createTransaction(transaction);
+                window.app.showAlert('Transaction added successfully', 'success', document.getElementById('alert-container'));
+                hideAddTransactionForm();
+                loadTransactions();
+            } catch (error) {
+                window.app.showAlert(error.message, 'danger', document.getElementById('alert-container'));
+            }
+        });
+
+        // Load on page load
+        loadTransactions();
+    </script>
+</body>
+</html>

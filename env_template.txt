@@ -1,0 +1,22 @@
+# Copy this file to .env and update the values
+
+# Flask Configuration
+FLASK_APP=app.py
+FLASK_ENV=development
+SECRET_KEY=dev-secret-key-change-in-production-use-random-string-here
+
+# Database Configuration
+# IMPORTANT: Update these values with your MySQL credentials
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password_here
+DB_NAME=fiscal_pilot
+
+# Groq API Configuration
+# Get your API key from: https://console.groq.com
+GROQ_API_KEY=your-groq-api-key-here
+
+# Application Settings
+DEBUG=True
+PORT=5000

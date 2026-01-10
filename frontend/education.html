@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Education - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link active">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Education Content -->
+    <section class="section">
+        <div class="container">
+            <h1>Investment Education</h1>
+            <p class="text-muted">Educational information about investment options. Not investment advice.</p>
+
+            <div id="alert-container"></div>
+
+            <!-- Disclaimer -->
+            <div class="alert alert-warning" style="margin-bottom: 2rem;">
+                <strong>Important Disclaimer:</strong> The information provided here is for educational purposes only. 
+                It does not constitute investment advice. All investments carry risk. 
+                Past performance does not guarantee future results. Consult with a certified financial advisor before making investment decisions.
+            </div>
+
+            <!-- Educational Content -->
+            <div id="education-content">
+                <div class="card">
+                    <p class="text-center text-muted">Loading educational content...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        async function loadEducationContent() {
+            const container = document.getElementById('education-content');
+            
+            try {
+                // Get user's risk profile to personalize education
+                let riskLevel = 'Medium';
+                try {
+                    const profile = await window.app.getRiskProfile();
+                    riskLevel = profile.risk_level;
+                } catch (e) {
+                    // Use default if no profile
+                }
+                
+                // For now, show static educational content
+                // In a full implementation, this could come from the Investment Knowledge Agent
+                displayEducationContent(riskLevel);
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger">Error loading content: ${error.message}</div>`;
+            }
+        }
+
+        function displayEducationContent(riskLevel) {
+            const container = document.getElementById('education-content');
+            
+            container.innerHTML = `
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Stocks (Equities)</h2>
+                    </div>
+                    <div>
+                        <h3>Overview</h3>
+                        <p>Stocks represent ownership shares in a company. When you buy stocks, you become a partial owner of that company.</p>
+                        
+                        <h3 style="margin-top: 1.5rem;">Risk Tiers</h3>
+                        <div class="grid grid-3" style="margin-top: 1rem;">
+                            <div class="card">
+                                <h4>Low Risk (Large-Cap)</h4>
+                                <p style="font-size: 0.9rem;">Blue-chip companies with established track records. Generally more stable but still subject to market volatility.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> Moderate. Can decline in value.</p>
+                            </div>
+                            <div class="card">
+                                <h4>Medium Risk (Mid-Cap)</h4>
+                                <p style="font-size: 0.9rem;">Mid-sized companies with growth potential. Higher volatility than large-cap stocks.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> Moderate-High. Price fluctuations are common.</p>
+                            </div>
+                            <div class="card">
+                                <h4>High Risk (Small-Cap)</h4>
+                                <p style="font-size: 0.9rem;">Smaller companies or sector-specific stocks. Highest volatility and potential for significant losses.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> High. Can lose substantial value quickly.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" style="margin-top: 1.5rem;">
+                            <strong>Important:</strong> Stock prices can go up or down. There is no guarantee of returns. 
+                            You may lose money investing in stocks. Diversification is important to manage risk.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Gold</h2>
+                    </div>
+                    <div>
+                        <h3>Overview</h3>
+                        <p>Gold is often considered a hedge against inflation and currency fluctuations. It's a physical asset with a long history as a store of value.</p>
+                        
+                        <h3 style="margin-top: 1.5rem;">Forms of Gold Investment</h3>
+                        <div class="grid grid-2" style="margin-top: 1rem;">
+                            <div class="card">
+                                <h4>Physical Gold</h4>
+                                <p style="font-size: 0.9rem;">Gold coins, bars, or jewelry. Requires secure storage and may have additional costs for insurance and safekeeping.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Considerations:</strong> Storage costs, security, liquidity</p>
+                            </div>
+                            <div class="card">
+                                <h4>Gold ETFs/Mutual Funds</h4>
+                                <p style="font-size: 0.9rem;">Exchange-traded funds or mutual funds that invest in gold. Easier to buy/sell, no storage needed.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Considerations:</strong> Management fees, market price tracking</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" style="margin-top: 1.5rem;">
+                            <strong>Important:</strong> Gold prices fluctuate based on market conditions. 
+                            It is not guaranteed to always increase in value. Past performance does not predict future performance.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Debt / Safe Assets</h2>
+                    </div>
+                    <div>
+                        <h3>Overview</h3>
+                        <p>Debt instruments typically offer lower returns but higher stability compared to equities.</p>
+                        
+                        <h3 style="margin-top: 1.5rem;">Options</h3>
+                        <div class="grid grid-3" style="margin-top: 1rem;">
+                            <div class="card">
+                                <h4>Fixed Deposits</h4>
+                                <p style="font-size: 0.9rem;">Bank deposits with fixed interest rates for a specific period. Generally very low risk.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> Very Low. Interest rates vary. Early withdrawal may have penalties.</p>
+                            </div>
+                            <div class="card">
+                                <h4>Government Bonds</h4>
+                                <p style="font-size: 0.9rem;">Debt securities issued by the government. Very low default risk but still subject to interest rate risk.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> Low. Prices can fluctuate with interest rate changes.</p>
+                            </div>
+                            <div class="card">
+                                <h4>Debt Mutual Funds</h4>
+                                <p style="font-size: 0.9rem;">Funds that invest in bonds and debt instruments. Moderate risk depending on credit quality and duration.</p>
+                                <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;"><strong>Risk:</strong> Low to Moderate. NAV can fluctuate.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" style="margin-top: 1.5rem;">
+                            <strong>Important:</strong> Even "safe" assets carry some risk. Interest rates change, 
+                            and returns may not always keep pace with inflation. Read all terms carefully.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="alert alert-danger">
+                        <h3>Final Reminder</h3>
+                        <p><strong>This is educational information only, not investment advice.</strong></p>
+                        <p>Before making any investment decisions:</p>
+                        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                            <li>Understand your risk tolerance</li>
+                            <li>Consider your financial goals and timeline</li>
+                            <li>Diversify your portfolio</li>
+                            <li>Consult with a certified financial advisor</li>
+                            <li>Never invest more than you can afford to lose</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load on page load
+        loadEducationContent();
+    </script>
+</body>
+</html>

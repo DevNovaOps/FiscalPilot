@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Profile - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link active">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Risk Profile Content -->
+    <section class="section">
+        <div class="container">
+            <h1>Risk Profile</h1>
+            <p class="text-muted">Your AI-assessed financial risk tolerance and behavior analysis</p>
+
+            <div id="alert-container"></div>
+
+            <div id="risk-profile-content">
+                <div class="card">
+                    <p class="text-center text-muted">Loading risk profile...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        async function loadRiskProfile() {
+            const container = document.getElementById('risk-profile-content');
+            
+            try {
+                const profile = await window.app.getRiskProfile();
+                displayRiskProfile(profile);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="alert alert-info">
+                            <h3>No Risk Profile Yet</h3>
+                            <p>Your risk profile will be generated after you add transactions and run an AI analysis.</p>
+                            <a href="/insights.html" class="btn btn-primary" style="margin-top: 1rem;">Run Analysis</a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayRiskProfile(profile) {
+            const container = document.getElementById('risk-profile-content');
+            
+            const riskColor = profile.risk_level === 'Low' ? 'var(--accent-success)' : 
+                             profile.risk_level === 'Medium' ? 'var(--accent-warning)' : 
+                             'var(--accent-danger)';
+            
+            let html = `
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Current Risk Assessment</h2>
+                        <small class="text-muted">Assessed on ${window.app.formatDate(profile.assessed_at)}</small>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                        <div style="text-align: center; padding: 1.5rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <h3 style="color: ${riskColor}; font-size: 3rem; margin: 0;">${profile.risk_level}</h3>
+                            <p class="text-muted">Risk Level</p>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <h3 style="color: var(--accent-primary); font-size: 3rem; margin: 0;">${profile.risk_score}/100</h3>
+                            <p class="text-muted">Risk Score</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Financial Metrics</h2>
+                    </div>
+                    <div class="grid grid-2" style="margin-top: 1rem;">
+                        <div>
+                            <p class="text-muted">Income Stability</p>
+                            <h3>${profile.income_stability_score !== null ? (profile.income_stability_score * 100).toFixed(0) + '%' : 'N/A'}</h3>
+                        </div>
+                        <div>
+                            <p class="text-muted">Expense Volatility</p>
+                            <h3>${profile.expense_volatility_score !== null ? (profile.expense_volatility_score * 100).toFixed(0) + '%' : 'N/A'}</h3>
+                        </div>
+                        <div>
+                            <p class="text-muted">Savings Rate</p>
+                            <h3 style="color: var(--accent-success);">${profile.savings_rate !== null ? profile.savings_rate.toFixed(1) + '%' : 'N/A'}</h3>
+                        </div>
+                        <div>
+                            <p class="text-muted">Emergency Fund</p>
+                            <h3>${profile.emergency_fund_months !== null ? profile.emergency_fund_months.toFixed(1) + ' months' : 'N/A'}</h3>
+                        </div>
+                        <div>
+                            <p class="text-muted">Discretionary Spending</p>
+                            <h3>${profile.discretionary_spend_percentage !== null ? profile.discretionary_spend_percentage.toFixed(1) + '%' : 'N/A'}</h3>
+                        </div>
+                        <div>
+                            <p class="text-muted">Recurring Obligations</p>
+                            <h3>${profile.recurring_obligations_percentage !== null ? profile.recurring_obligations_percentage.toFixed(1) + '%' : 'N/A'}</h3>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (profile.explanation) {
+                html += `
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <div class="card-header">
+                            <h2 class="card-title">Explanation</h2>
+                        </div>
+                        <p>${profile.explanation}</p>
+                    </div>
+                `;
+            }
+            
+            if (profile.key_factors && profile.key_factors.length > 0) {
+                html += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Key Factors</h2>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            ${profile.key_factors.map(factor => `
+                                <div style="padding: 1rem; margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid ${factor.impact === 'positive' ? 'var(--accent-success)' : factor.impact === 'negative' ? 'var(--accent-danger)' : 'var(--accent-warning)'};">
+                                    <h4>${factor.factor}</h4>
+                                    <p style="margin: 0.5rem 0 0 0;">${factor.description}</p>
+                                    <span class="badge ${factor.impact === 'positive' ? 'badge-success' : factor.impact === 'negative' ? 'badge-danger' : 'badge-warning'}" style="margin-top: 0.5rem;">
+                                        ${factor.impact}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="alert alert-info">
+                        <p><strong>Note:</strong> This risk profile is generated by AI based on your transaction history and spending patterns. 
+                        It is for educational purposes only and should not be considered as investment advice. 
+                        For personalized financial advice, consult with a certified financial advisor.</p>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Load on page load
+        loadRiskProfile();
+    </script>
+</body>
+</html>
