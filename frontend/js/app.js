@@ -5,6 +5,10 @@
 // API Configuration
 const API_BASE = '/api';
 let authToken = localStorage.getItem('fiscal_pilot_token');
+function isAuthenticated() {
+    authToken = localStorage.getItem('fiscal_pilot_token');
+    return !!authToken;
+}
 
 // API Helper Functions
 async function apiRequest(endpoint, options = {}) {
@@ -38,6 +42,8 @@ async function apiRequest(endpoint, options = {}) {
 
 // Auth Functions
 async function login(email, password) {
+localStorage.removeItem('fiscal_pilot_token');
+localStorage.removeItem('fiscal_pilot_user');
     const data = await apiRequest('/auth/login', {
         method: 'POST',
         body: { email, password }
@@ -72,10 +78,6 @@ function logout() {
     localStorage.removeItem('fiscal_pilot_token');
     localStorage.removeItem('fiscal_pilot_user');
     window.location.href = '/';
-}
-
-function isAuthenticated() {
-    return !!authToken;
 }
 
 function getCurrentUser() {
