@@ -8,6 +8,7 @@ from .user_preference import UserPreference
 from .risk_profile import RiskProfile
 from .plaid_item import PlaidItem
 from .agent_action import AgentAction
+from .investment_recommendation import InvestmentRecommendation
 
 __all__ = [
     "User",
@@ -17,4 +18,5 @@ __all__ = [
     "RiskProfile",
     "PlaidItem",
     "AgentAction",
+    "InvestmentRecommendation",
 ]

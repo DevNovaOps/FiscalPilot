@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Intelligence - Fiscal Pilot</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/dashboard.html" class="navbar-brand">🚀 Fiscal Pilot</a>
+                <ul class="navbar-nav">
+                    <li><a href="/dashboard.html" class="navbar-link">Dashboard</a></li>
+                    <li><a href="/expenses.html" class="navbar-link">Expenses</a></li>
+                    <li><a href="/insights.html" class="navbar-link">AI Insights</a></li>
+                    <li><a href="/investment.html" class="navbar-link active">Investment Intelligence</a></li>
+                    <li><a href="/risk-profile.html" class="navbar-link">Risk Profile</a></li>
+                    <li><a href="/education.html" class="navbar-link">Education</a></li>
+                    <li><a href="/settings.html" class="navbar-link">Settings</a></li>
+                </ul>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+                    <button onclick="window.app.logout()" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Investment Intelligence Content -->
+    <section class="section">
+        <div class="container">
+            <h1>🧠 Investment Intelligence Engine</h1>
+            <p class="text-muted">Personalized investment suggestions powered by multi-agent decision system</p>
+
+            <div id="alert-container"></div>
+
+            <!-- Generate Recommendation Section -->
+            <div class="card" style="margin: 2rem 0;">
+                <div class="card-header">
+                    <h2 class="card-title">Generate Investment Recommendation</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Our multi-agent system analyzes your financial profile, detects investment intent,
+                        and routes you through personalized investment paths.
+                    </p>
+                    <button onclick="generateRecommendation()" class="btn btn-primary" id="generate-btn">
+                        Generate Investment Recommendation
+                    </button>
+                    <div id="generation-status" style="margin-top: 1rem; display: none;">
+                        <p class="text-muted">Analyzing your financial profile...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Recommendation Display -->
+            <div id="recommendation-container" style="display: none;">
+                <!-- Investor Profile Summary -->
+                <div class="card" style="margin: 2rem 0;">
+                    <div class="card-header">
+                        <h2 class="card-title">Investor Profile</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-2" style="gap: 1.5rem;">
+                            <div>
+                                <h3 style="margin-bottom: 0.5rem;">Investor Type</h3>
+                                <p style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);" id="investor-type">-</p>
+                            </div>
+                            <div>
+                                <h3 style="margin-bottom: 0.5rem;">Risk Tolerance</h3>
+                                <p style="font-size: 1.5rem; font-weight: 700;" id="risk-tolerance">-</p>
+                            </div>
+                            <div>
+                                <h3 style="margin-bottom: 0.5rem;">Primary Intent</h3>
+                                <p style="font-size: 1.25rem; font-weight: 600;" id="primary-intent">-</p>
+                            </div>
+                            <div>
+                                <h3 style="margin-bottom: 0.5rem;">Monthly Surplus</h3>
+                                <p style="font-size: 1.25rem; font-weight: 600; color: var(--accent-success);" id="monthly-surplus">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Investment Path(s) -->
+                <div class="card" style="margin: 2rem 0;">
+                    <div class="card-header">
+                        <h2 class="card-title">Selected Investment Path</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.5rem; color: var(--accent-primary);" id="selected-path">-</h3>
+                            <p class="text-muted" id="path-description">-</p>
+                        </div>
+                        <div id="path-badges" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Agent Reasoning -->
+                <div class="card" style="margin: 2rem 0;">
+                    <div class="card-header">
+                        <h2 class="card-title">Agent Reasoning Summary</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="reasoning-content">
+                            <p class="text-muted" id="main-reasoning">-</p>
+                        </div>
+                        <div id="agent-details" style="margin-top: 1.5rem;">
+                            <h4 style="margin-bottom: 1rem;">Agent Analysis Details</h4>
+                            <div id="agent-details-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Recommendations -->
+                <div class="card" style="margin: 2rem 0;">
+                    <div class="card-header">
+                        <h2 class="card-title">Investment Recommendations</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="recommendations-content"></div>
+                    </div>
+                </div>
+
+                <!-- Actionable Next Steps -->
+                <div class="card" style="margin: 2rem 0;">
+                    <div class="card-header">
+                        <h2 class="card-title">Actionable Next Steps</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="actionable-steps"></div>
+                    </div>
+                </div>
+
+                <!-- Safety Warnings -->
+                <div id="safety-warnings-container" style="display: none;">
+                    <div class="card" style="margin: 2rem 0; border-left: 4px solid var(--accent-warning);">
+                        <div class="card-header">
+                            <h2 class="card-title">⚠️ Safety Recommendations</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="safety-warnings"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="card" style="margin: 2rem 0; background-color: var(--bg-secondary); border-left: 4px solid var(--accent-warning);">
+                    <div class="card-body">
+                        <h3 style="margin-bottom: 1rem; color: var(--accent-warning);">⚠️ Important Disclaimer</h3>
+                        <p style="margin-bottom: 0.5rem;">
+                            <strong>This is educational and advisory information only, not investment advice.</strong>
+                        </p>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li>No financial guarantees are provided</li>
+                            <li>No direct stock picks or trading recommendations</li>
+                            <li>All investments carry risk - past performance does not guarantee future results</li>
+                            <li>Consult with a certified financial advisor before making investment decisions</li>
+                            <li>This system provides educational guidance based on your financial profile</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" style="display: none;">
+                <div class="card">
+                    <div class="card-body" style="text-align: center; padding: 3rem;">
+                        <p style="font-size: 1.25rem; margin-bottom: 1rem;">Loading recommendation...</p>
+                        <p class="text-muted">Multi-agent system is analyzing your financial profile</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Recommendation State -->
+            <div id="no-recommendation-state" style="display: none;">
+                <div class="card">
+                    <div class="card-body" style="text-align: center; padding: 3rem;">
+                        <p style="font-size: 1.25rem; margin-bottom: 1rem;">No recommendation available</p>
+                        <p class="text-muted">Click "Generate Investment Recommendation" to get started</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/animations.js"></script>
+    <script>
+        // Check authentication
+        if (!window.app.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Load recommendation on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRecommendation();
+        });
+
+        async function generateRecommendation() {
+            const btn = document.getElementById('generate-btn');
+            const status = document.getElementById('generation-status');
+            const loadingState = document.getElementById('loading-state');
+            const recommendationContainer = document.getElementById('recommendation-container');
+            const noRecommendationState = document.getElementById('no-recommendation-state');
+
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Generating...';
+                status.style.display = 'block';
+                loadingState.style.display = 'block';
+                recommendationContainer.style.display = 'none';
+                noRecommendationState.style.display = 'none';
+
+                const response = await fetch('/api/investment/recommendation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('fiscal_pilot_token')}`
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to generate recommendation');
+                }
+
+                if (data.status === 'success') {
+                    displayRecommendation(data.recommendation);
+                } else {
+                    showAlert('Failed to generate recommendation', 'error');
+                }
+            } catch (error) {
+                console.error('Error generating recommendation:', error);
+                showAlert('Error generating recommendation: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Investment Recommendation';
+                status.style.display = 'none';
+                loadingState.style.display = 'none';
+            }
+        }
+
+        async function loadRecommendation() {
+            const recommendationContainer = document.getElementById('recommendation-container');
+            const loadingState = document.getElementById('loading-state');
+            const noRecommendationState = document.getElementById('no-recommendation-state');
+
+            try {
+                const response = await fetch('/api/investment/recommendation/latest', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('fiscal_pilot_token')}`
+                    }
+                });
+                const data = await response.json();
+
+                if (data.status === 'success' && data.recommendation) {
+                    displayRecommendation(data.recommendation);
+                } else {
+                    recommendationContainer.style.display = 'none';
+                    loadingState.style.display = 'none';
+                    noRecommendationState.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading recommendation:', error);
+                recommendationContainer.style.display = 'none';
+                loadingState.style.display = 'none';
+                noRecommendationState.style.display = 'block';
+            }
+        }
+
+        function displayRecommendation(rec) {
+            const recommendationContainer = document.getElementById('recommendation-container');
+            const loadingState = document.getElementById('loading-state');
+            const noRecommendationState = document.getElementById('no-recommendation-state');
+
+            recommendationContainer.style.display = 'block';
+            loadingState.style.display = 'none';
+            noRecommendationState.style.display = 'none';
+
+            // Display investor profile
+            document.getElementById('investor-type').textContent = rec.investor_type || '-';
+            document.getElementById('risk-tolerance').textContent = rec.risk_tolerance || '-';
+            document.getElementById('primary-intent').textContent = formatIntent(rec.primary_intent || '-');
+            
+            const profilerOutput = rec.profiler_output || {};
+            const monthlySurplus = profilerOutput.monthly_surplus || 0;
+            document.getElementById('monthly-surplus').textContent = formatCurrency(monthlySurplus);
+
+            // Display selected path
+            document.getElementById('selected-path').textContent = rec.selected_path || '-';
+            
+            // Display path badges
+            const pathBadgesContainer = document.getElementById('path-badges');
+            pathBadgesContainer.innerHTML = '';
+            if (rec.selected_paths && rec.selected_paths.length > 0) {
+                rec.selected_paths.forEach(path => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge';
+                    badge.textContent = path;
+                    badge.style.cssText = 'padding: 0.5rem 1rem; background-color: var(--accent-primary); color: white; border-radius: 0.25rem;';
+                    pathBadgesContainer.appendChild(badge);
+                });
+            }
+
+            // Display reasoning
+            document.getElementById('main-reasoning').textContent = rec.reasoning || 'No reasoning provided.';
+
+            // Display agent details
+            displayAgentDetails(rec.agent_reasoning || {});
+
+            // Display recommendations
+            displayRecommendations(rec.recommendations || {});
+
+            // Display actionable steps
+            displayActionableSteps(rec.recommendations?.actionable_steps || []);
+
+            // Display safety warnings
+            displaySafetyWarnings(rec.recommendations?.risk_warnings || [], rec.safety_override, rec.safety_reason);
+        }
+
+        function displayAgentDetails(agentReasoning) {
+            const container = document.getElementById('agent-details-content');
+            container.innerHTML = '';
+
+            const agents = [
+                { key: 'profiler', name: 'User Profiling Agent', icon: '👤' },
+                { key: 'intent', name: 'Intent Detection Agent', icon: '🎯' },
+                { key: 'router', name: 'Path Router Agent', icon: '🛤️' },
+                { key: 'equity', name: 'Equity Agent', icon: '📈' },
+                { key: 'etf', name: 'ETF/Mutual Fund Agent', icon: '📊' },
+                { key: 'risk', name: 'Risk & Safety Agent', icon: '🛡️' },
+            ];
+
+            agents.forEach(agent => {
+                const agentData = agentReasoning[agent.key];
+                if (!agentData) return;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'margin-bottom: 1rem; background-color: var(--bg-secondary);';
+                
+                let content = `<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-size: 1.5rem;">${agent.icon}</span>
+                    <strong>${agent.name}</strong>
+                </div>`;
+
+                if (agent.key === 'profiler') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Investor Type: ${agentData.investor_type || '-'}</p>`;
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Risk Tolerance: ${agentData.risk_tolerance || '-'}</p>`;
+                } else if (agent.key === 'intent') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Primary Intent: ${formatIntent(agentData.primary_intent || '-')}</p>`;
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Confidence: ${(agentData.confidence * 100).toFixed(0)}%</p>`;
+                } else if (agent.key === 'router') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Selected Paths: ${(agentData.selected_paths || []).join(', ')}</p>`;
+                } else if (agent.key === 'equity') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Strategy: ${formatStrategy(agentData.strategy || '-')}</p>`;
+                } else if (agent.key === 'etf') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Strategy: ${formatStrategy(agentData.strategy || '-')}</p>`;
+                    if (agentData.sip_recommended) {
+                        content += `<p class="text-muted" style="margin: 0.25rem 0;">SIP Recommended: Yes</p>`;
+                    }
+                } else if (agent.key === 'risk') {
+                    content += `<p class="text-muted" style="margin: 0.25rem 0;">Risk Score: ${agentData.risk_score || '-'}</p>`;
+                    if (agentData.safety_override) {
+                        content += `<p class="text-muted" style="margin: 0.25rem 0; color: var(--accent-warning);">⚠️ Safety Override Applied</p>`;
+                    }
+                }
+
+                card.innerHTML = `<div style="padding: 1rem;">${content}</div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function displayRecommendations(recommendations) {
+            const container = document.getElementById('recommendations-content');
+            container.innerHTML = '';
+
+            const investmentSuggestions = recommendations.investment_suggestions || [];
+
+            if (investmentSuggestions.length === 0) {
+                container.innerHTML = '<p class="text-muted">No specific investment suggestions available.</p>';
+                return;
+            }
+
+            investmentSuggestions.forEach(suggestion => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'margin-bottom: 1.5rem;';
+
+                let content = `<div class="card-header">
+                    <h3 class="card-title">${formatSuggestionType(suggestion.type)}</h3>
+                </div>
+                <div class="card-body">`;
+
+                if (suggestion.strategy) {
+                    content += `<p><strong>Strategy:</strong> ${formatStrategy(suggestion.strategy)}</p>`;
+                }
+
+                if (suggestion.allocation) {
+                    content += `<p><strong>Allocation Suggestion:</strong> ${suggestion.allocation}</p>`;
+                }
+
+                if (suggestion.sip_amount && suggestion.sip_amount > 0) {
+                    content += `<p><strong>Recommended SIP:</strong> ${formatCurrency(suggestion.sip_amount)} per month</p>`;
+                }
+
+                if (suggestion.focus_areas && suggestion.focus_areas.length > 0) {
+                    content += `<div style="margin-top: 1rem;">
+                        <strong>Focus Areas:</strong>
+                        <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">`;
+                    suggestion.focus_areas.forEach(area => {
+                        content += `<li>${area}</li>`;
+                    });
+                    content += `</ul></div>`;
+                }
+
+                if (suggestion.fund_categories && suggestion.fund_categories.length > 0) {
+                    content += `<div style="margin-top: 1rem;">
+                        <strong>Fund Categories:</strong>
+                        <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">`;
+                    suggestion.fund_categories.forEach(category => {
+                        content += `<li>${category}</li>`;
+                    });
+                    content += `</ul></div>`;
+                }
+
+                if (suggestion.educational_points && suggestion.educational_points.length > 0) {
+                    content += `<div style="margin-top: 1rem;">
+                        <strong>Key Points:</strong>
+                        <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">`;
+                    suggestion.educational_points.forEach(point => {
+                        content += `<li>${point}</li>`;
+                    });
+                    content += `</ul></div>`;
+                }
+
+                content += `</div>`;
+                card.innerHTML = content;
+                container.appendChild(card);
+            });
+        }
+
+        function displayActionableSteps(steps) {
+            const container = document.getElementById('actionable-steps');
+            container.innerHTML = '';
+
+            if (steps.length === 0) {
+                container.innerHTML = '<p class="text-muted">No actionable steps available.</p>';
+                return;
+            }
+
+            steps.forEach((step, index) => {
+                const stepCard = document.createElement('div');
+                stepCard.className = 'card';
+                stepCard.style.cssText = 'margin-bottom: 1rem; background-color: var(--bg-secondary);';
+                
+                stepCard.innerHTML = `
+                    <div style="padding: 1rem;">
+                        <div style="display: flex; align-items: start; gap: 1rem;">
+                            <span style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);">${index + 1}</span>
+                            <div style="flex: 1;">
+                                <strong>${step.step}</strong>
+                                <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">${step.reasoning || ''}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(stepCard);
+            });
+        }
+
+        function displaySafetyWarnings(warnings, safetyOverride, safetyReason) {
+            const container = document.getElementById('safety-warnings-container');
+            const warningsContainer = document.getElementById('safety-warnings');
+            warningsContainer.innerHTML = '';
+
+            if (safetyOverride && safetyReason) {
+                const warningCard = document.createElement('div');
+                warningCard.className = 'card';
+                warningCard.style.cssText = 'margin-bottom: 1rem; background-color: var(--bg-secondary); border-left: 4px solid var(--accent-warning);';
+                warningCard.innerHTML = `
+                    <div style="padding: 1rem;">
+                        <strong style="color: var(--accent-warning);">⚠️ Safety Override Applied</strong>
+                        <p class="text-muted" style="margin: 0.5rem 0 0 0;">${safetyReason}</p>
+                    </div>
+                `;
+                warningsContainer.appendChild(warningCard);
+            }
+
+            if (warnings.length > 0) {
+                warnings.forEach(warning => {
+                    const warningCard = document.createElement('div');
+                    warningCard.className = 'card';
+                    warningCard.style.cssText = 'margin-bottom: 1rem; background-color: var(--bg-secondary); border-left: 4px solid var(--accent-warning);';
+                    warningCard.innerHTML = `
+                        <div style="padding: 1rem;">
+                            <strong style="color: var(--accent-warning);">⚠️ ${warning.warning}</strong>
+                            <p class="text-muted" style="margin: 0.5rem 0 0 0;">${warning.reasoning || ''}</p>
+                        </div>
+                    `;
+                    warningsContainer.appendChild(warningCard);
+                });
+            }
+
+            container.style.display = (safetyOverride || warnings.length > 0) ? 'block' : 'none';
+        }
+
+        function formatIntent(intent) {
+            return intent.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatStrategy(strategy) {
+            return strategy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatSuggestionType(type) {
+            const types = {
+                'equity': 'Equity Investments',
+                'etf_mutual_funds': 'ETF / Mutual Funds',
+            };
+            return types[type] || type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.style.cssText = 'margin-bottom: 1rem;';
+            alert.textContent = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

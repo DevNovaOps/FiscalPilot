@@ -16,7 +16,7 @@ if sys.platform == 'win32':
 from backend.app import create_app
 from backend.db import db
 # Import all models to register them with SQLAlchemy
-from backend.models import User, Transaction, RiskProfile, AIDecision, UserPreference, PlaidItem, AgentAction
+from backend.models import User, Transaction, RiskProfile, AIDecision, UserPreference, PlaidItem, AgentAction, InvestmentRecommendation
 
 app = create_app()
 
@@ -35,6 +35,7 @@ with app.app_context():
         print("  - user_preferences")
         print("  - plaid_items")
         print("  - agent_actions")
+        print("  - investment_recommendations")
     except Exception as e:
         print(f"[ERROR] Failed to create database tables: {str(e)}")
         print("\nMake sure:")

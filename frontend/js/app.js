@@ -256,9 +256,9 @@ function initializePlaidLink() {
 
 // Utility Functions
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('USD', {
         style: 'currency',
-        currency: 'INR',
+        currency: 'USD',
         minimumFractionDigits: 0,
         maximumFractionDigits: 2
     }).format(amount);
