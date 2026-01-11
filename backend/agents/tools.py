@@ -17,7 +17,7 @@ class TransactionTools:
     """
     
     @staticmethod
-    @tool
+    # @tool
     def get_user_transactions(user_id: int, days: int = 90) -> List[Dict[str, Any]]:
         """
         Get user transactions for the last N days
@@ -38,7 +38,7 @@ class TransactionTools:
         return [t.to_dict() for t in transactions]
     
     @staticmethod
-    @tool
+    # @tool
     def get_transactions_by_category(user_id: int, category: str) -> List[Dict[str, Any]]:
         """
         Get transactions by category
@@ -58,7 +58,7 @@ class TransactionTools:
         return [t.to_dict() for t in transactions]
     
     @staticmethod
-    @tool
+    # @tool
     def get_monthly_summary(user_id: int, months: int = 6) -> Dict[str, Any]:
         """
         Get monthly income and expense summary
@@ -107,7 +107,7 @@ class FinancialAnalysisTools:
     """
     
     @staticmethod
-    @tool
+    # @tool
     def calculate_savings_rate(user_id: int, months: int = 3) -> Dict[str, Any]:
         """
         Calculate average savings rate over last N months
@@ -154,7 +154,7 @@ class FinancialAnalysisTools:
         }
     
     @staticmethod
-    @tool
+    # @tool
     def detect_recurring_expenses(user_id: int) -> Dict[str, Any]:
         """
         Detect recurring expenses (subscriptions, EMIs, etc.)
@@ -183,7 +183,7 @@ class FinancialAnalysisTools:
         }
     
     @staticmethod
-    @tool
+    # @tool
     def get_user_preferences(user_id: int) -> Optional[Dict[str, Any]]:
         """
         Get user financial preferences and goals
